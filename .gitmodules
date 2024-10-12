@@ -1,0 +1,3 @@
+[submodule "src/roboboat2025_ros2"]
+	path = src/roboboat2025_ros2
+	url = https://github.com/ROboSub-UTD/roboboat2025_ros2
