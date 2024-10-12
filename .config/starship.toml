@@ -1,0 +1,144 @@
+format = """
+[┌](fg:bold white)\
+[](green)\
+$username$hostname\
+[](bg:blue green)\
+$directory\
+[](blue)\
+$fill\
+[](fg:blue)\
+$container\
+$python\
+$git_branch\
+$git_status\
+[](fg:blue bg:red)\
+ $status\
+[](fg:red bg:yellow)\
+$cmd_duration\
+[](yellow)
+[└─󰛿 ](fg:bold white)\
+"""
+
+# Disable the blank line at the start of the prompt
+# add_newline = false
+
+# You can also replace your username with a neat symbol like  to save some space
+[username]
+show_always = true
+style_user  = "bg:green bold black"
+style_root  = "bg:green bold black"
+format      = '[$user]($style)'
+
+[hostname]
+style      = "bg:green bold black"
+ssh_only   = false
+ssh_symbol = "/ "
+format     = '[@$hostname$ssh_symbol](bold black bg:green)'
+trim_at    = '.companyname.com'
+disabled   = false
+
+[directory]
+style             = "bg:blue bold black"
+format            = "[ $path ]($style)"
+truncation_length = 3
+truncation_symbol = "…/"
+read_only         = "󰌾"
+
+[container]
+style = "bg:blue bold black"
+format = '[$symbol \[$name\]]($style)'
+
+# Here is how you can shorten some long paths by text replacement
+# similar to mapped_locations in Oh My Posh:
+[directory.substitutions]
+"Documents" = "󰈙 "
+"Downloads" = " "
+"Music"     = " "
+"Pictures"  = " "
+
+[git_branch]
+style  = "bg:blue bold black"
+format = "[ on $symbol$branch(:$remote_branch)]($style)"
+symbol = " "
+
+[git_status]
+style = "bg:blue bold black"
+format = '([\[$all_status$ahead_behind\]]($style))'
+
+[cmd_duration]
+min_time = 250
+style = "bg:yellow bold black"
+format = "[ $duration]($style)"
+
+[status]
+disabled = false
+symbol = "✖"
+style = "bg:red bold black"
+format = "[$symbol]($style)"
+
+[fill]
+style = "bold white"
+
+[c]
+symbol = " "
+
+[docker_context]
+symbol = " "
+
+[lua]
+symbol = " "
+
+[memory_usage]
+symbol = "󰍛 "
+
+[meson]
+symbol = "󰔷 "
+
+[os.symbols]
+Alpaquita = " "
+Alpine = " "
+Amazon = " "
+Android = " "
+Arch = " "
+Artix = " "
+CentOS = " "
+Debian = " "
+DragonFly = " "
+Emscripten = " "
+EndeavourOS = " "
+Fedora = " "
+FreeBSD = " "
+Garuda = "󰛓 "
+Gentoo = " "
+HardenedBSD = "󰞌 "
+Illumos = "󰈸 "
+Linux = " "
+Mabox = " "
+Macos = " "
+Manjaro = " "
+Mariner = " "
+MidnightBSD = " "
+Mint = " "
+NetBSD = " "
+NixOS = " "
+OpenBSD = "󰈺 "
+openSUSE = " "
+OracleLinux = "󰌷 "
+Pop = " "
+Raspbian = " "
+Redhat = " "
+RedHatEnterprise = " "
+Redox = "󰀘 "
+Solus = "󰠳 "
+SUSE = " "
+Ubuntu = " "
+Unknown = " "
+Windows = "󰍲 "
+
+[package]
+symbol = "󰏗 "
+
+[python]
+format = '[${symbol}${pyenv_prefix}(${version})(\($virtualenv\) )]($style)'
+style = "bg:blue bold black"
+symbol = " "

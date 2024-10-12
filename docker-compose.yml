@@ -1,0 +1,66 @@
+########################################
+# Docker Compose File for UTD Roboboat #
+########################################
+#
+# Usage:
+# - To build the images:
+#     `docker compose build`
+# - To start up a specific service:
+#     `docker compose up <service_name>`
+# - To open an interactive shell to a running container:
+#     `docker exec -it <container_name> bash`
+#
+##########################################################
+
+services:
+    # Base image containing dependencies.
+    base:
+        image: utd_roboboat_2025:base
+        build:
+            context: .
+            dockerfile: Docker/Dockerfile
+            target: base
+        # Interactive shell
+        stdin_open: True
+        tty: True
+        privileged: True
+        # Networking and IPC for ROS 2
+        network_mode: host
+        ipc: host
+        environment:
+            # Needed to define a TurtleBot3 model type
+            - TURTLEBOT3_MODEL=burger
+            # Allows graphical programs in the container.
+            - DISPLAY=${DISPLAY}
+            - QT_X11_NO_MITSHM=1
+            - NVIDIA_DRIVER_CAPABILITIES=all
+        volumes:
+            # Allows graphical programs in the container.
+            - /tmp/.X11-unix:/tmp/.X11-unix:rw
+            - ${XAUTHORITY:-$HOME/.Xauthority}:/root/.Xauthority
+            - ./src:/root/roboboat_ws/src
+        runtime: nvidia
+        # devices:
+        device_cgroup_rules:
+            - "c 189:* rmw"
+    development:
+        extends: base
+        image: utd_roboboat_2025:development
+        build:
+            context: .
+            dockerfile: Docker/Dockerfile
+            target: development
+        volumes:
+            # Allows graphical programs in the container.
+            - /tmp/.X11-unix:/tmp/.X11-unix:rw
+            - ${XAUTHORITY:-$HOME/.Xauthority}:/root/.Xauthority
+            - ./src:/root/roboboat_ws/src
+            - ./.config:/root/.config
+            # - /dev/bus/usb:/dev/bus/usb
+            - /dev:/dev
+            - ${HOME}/zed_docker_ai/:/usr/local/zed/resources/
+    sim:
+        extends: development
+        tty: False
+        stdin_open: False
+        command: ros2 launch vrx_gz competition.launch.py
