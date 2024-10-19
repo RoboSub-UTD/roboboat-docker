@@ -1,15 +1,15 @@
 # RoboBoat 2025 Codebase
 
-```text
+```bash
 .
 ├── .config/
 │   ├── nvim/
 │   ├── setup-development-enviornment.sh
 │   └── starship.toml
 ├── Docker/
-│   ├── docker-build.sh
+│   ├── docker-build.sh # [DEPRECATED] Plan to remove
 │   ├── Dockerfile
-│   ├── docker-run.sh
+│   ├── docker-run.sh   # [DEPRECATED] Plan to remove
 │   └── entrypoint.sh
 ├── docker-compose.yml
 ├── README.md
@@ -22,6 +22,15 @@ These files are the infrastructure for the codebase:
 -   `Dockerfile`
 -   `entrypoint.sh`
 -   `docker-compose.yml`
+
+## Running Development Container in a Detached State
+
+You would normally do this whenever you are starting the container in order to attach to it in a code editor such as VSCode:
+
+```bash
+docker compose up -d development
+docker compose attach development # optional: attach to it later
+```
 
 ## Setting up Development Enviornment with Neovim
 
