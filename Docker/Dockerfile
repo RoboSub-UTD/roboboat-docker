@@ -54,31 +54,26 @@ RUN add-apt-repository -y universe && \
 
 ## Install ROS2 Packages
 RUN apt-get update && apt-get -y upgrade && apt-get -y --no-install-recommends install \
-    python3-sdformat13 gz-garden \
-    python3-colcon-common-extensions \
-    python3-vcstool ros-dev-tools \
     ros-${ROS_DISTRO}-ros-base \
-    ros-${ROS_DISTRO}-xacro \
-    ros-${ROS_DISTRO}-ros-gzgarden \
     ros-${ROS_DISTRO}-image-transport \
     ros-${ROS_DISTRO}-ament-cmake-auto \
     ros-${ROS_DISTRO}-diagnostic-updater \
+    ros-${ROS_DISTRO}-velodyne \
+    ros-${ROS_DISTRO}-velodyne-simulator \
     ros-${ROS_DISTRO}-image-transport-plugins \
     ros-${ROS_DISTRO}-ament-cmake-clang-format \
-    ros-${ROS_DISTRO}-rmw-cyclonedds-cpp \
-    "~nros-${ROS_DISTRO}-rqt*" && \
+    ros-${ROS_DISTRO}-rmw-cyclonedds-cpp && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update && apt-get -y upgrade && apt-get -y --no-install-recommends install \
+    gz-garden python3-sdformat13 \
+    ros-${ROS_DISTRO}-xacro \
+    ros-${ROS_DISTRO}-ros-gzgarden && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 
-# Use Cyclone DDS as middleware
+## Use Cyclone DDS as middleware
 ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-
-## Source the ROS2 Setup Script and save it in .bashrc
-RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ${HOME}/.bashrc && \
-    echo "source /usr/share/colcon_cd/function/colcon_cd.sh" >> ${HOME}/.bashrc && \
-    echo "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash" >> ${HOME}/.bashrc && \
-    echo "export _colcon_cd_root=/opt/ros/humble/" >> ${HOME}/.bashrc
-
 
 # ROS2 SETUP END
 
@@ -116,17 +111,33 @@ RUN echo "CUDA Version $CUDA_VERSION" > /usr/local/cuda/version.txt && \
 FROM base AS development
 
 # Additional Environment Variables
+
 ENV BOAT_WS='/root/roboboat_ws'
 
-# Setup Workspace
-RUN mkdir -p "${BOAT_WS}/src"
-WORKDIR "${BOAT_WS}/src"
-RUN echo "source ${BOAT_WS}/install/setup.bash" >> ${HOME}/.bashrc && \
+# Install additional development tools 
+
+RUN source /opt/ros/${ROS_DISTRO}/setup.bash && \
+    apt-get update && apt-get -y upgrade && apt-get -y -f --no-install-recommends install \
+    net-tools iputils-ping netcat \
+    python3-colcon-common-extensions \
+    python3-vcstool ros-dev-tools && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Setup ROS2 Development / Simulation Tools
+
+## Source the ROS2 Setup Script and save it in .bashrc
+RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ${HOME}/.bashrc && \
+    echo "source /usr/share/colcon_cd/function/colcon_cd.sh" >> ${HOME}/.bashrc && \
+    echo "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash" >> ${HOME}/.bashrc && \
+    echo "export _colcon_cd_root=/opt/ros/humble/" >> ${HOME}/.bashrc
+
+## Setup Workspace
+RUN mkdir -p "${BOAT_WS}/src" && \
+    cd "${BOAT_WS}/src" && \
+    echo "source ${BOAT_WS}/install/setup.bash" >> ${HOME}/.bashrc && \
     echo "cd ${BOAT_WS}" >> ${HOME}/.bashrc
 
 ## Download ZED ROS2 Wrapper & VRX Simulation
-WORKDIR ${BOAT_WS}/src
-### QUESTION is --depth 1 fine? It clones much faster but idk about its other implications
 RUN git clone --progress --verbose --recursive --depth 1 https://github.com/stereolabs/zed-ros2-wrapper.git && \
     git clone --progress --verbose --recursive --depth 1 https://github.com/osrf/vrx.git
 
@@ -142,6 +153,8 @@ RUN source /opt/ros/${ROS_DISTRO}/setup.bash && \
     '-DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs' \
     '-DCMAKE_CXX_FLAGS="-Wl,--allow-shlib-undefined"' && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Copy entrypoint script
 
 WORKDIR ${HOME}
 COPY ./Docker/entrypoint.sh ${HOME}
