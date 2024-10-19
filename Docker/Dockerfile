@@ -49,28 +49,16 @@ RUN locale-gen en_US en_US.UTF-8 && \
 RUN add-apt-repository -y universe && \
     curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg && \
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null && \
-    wget https://packages.osrfoundation.org/gazebo.gpg -O /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg && \
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null
-
-## Install ROS2 Packages
-RUN apt-get update && apt-get -y upgrade && apt-get -y --no-install-recommends install \
+    apt-get update && apt-get -y upgrade && apt-get -y --no-install-recommends install \
     ros-${ROS_DISTRO}-ros-base \
     ros-${ROS_DISTRO}-image-transport \
     ros-${ROS_DISTRO}-ament-cmake-auto \
     ros-${ROS_DISTRO}-diagnostic-updater \
     ros-${ROS_DISTRO}-velodyne \
-    ros-${ROS_DISTRO}-velodyne-simulator \
     ros-${ROS_DISTRO}-image-transport-plugins \
     ros-${ROS_DISTRO}-ament-cmake-clang-format \
     ros-${ROS_DISTRO}-rmw-cyclonedds-cpp && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
-
-RUN apt-get update && apt-get -y upgrade && apt-get -y --no-install-recommends install \
-    gz-garden python3-sdformat13 \
-    ros-${ROS_DISTRO}-xacro \
-    ros-${ROS_DISTRO}-ros-gzgarden && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-
 
 ## Use Cyclone DDS as middleware
 ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
@@ -112,15 +100,20 @@ FROM base AS development
 
 # Additional Environment Variables
 
+ARG ROS_DISTRO='humble'
 ENV BOAT_WS='/root/roboboat_ws'
 
 # Install additional development tools 
 
-RUN source /opt/ros/${ROS_DISTRO}/setup.bash && \
+RUN curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null && \
     apt-get update && apt-get -y upgrade && apt-get -y -f --no-install-recommends install \
     net-tools iputils-ping netcat \
     python3-colcon-common-extensions \
-    python3-vcstool ros-dev-tools && \
+    python3-sdformat13 \
+    python3-vcstool ros-dev-tools \
+    ros-${ROS_DISTRO}-xacro \
+    ros-${ROS_DISTRO}-ros-gzgarden && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Setup ROS2 Development / Simulation Tools
