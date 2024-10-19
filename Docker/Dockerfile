@@ -49,36 +49,19 @@ RUN locale-gen en_US en_US.UTF-8 && \
 RUN add-apt-repository -y universe && \
     curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg && \
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null && \
-    wget https://packages.osrfoundation.org/gazebo.gpg -O /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg && \
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null
-
-## Install ROS2 Packages
-RUN apt-get update && apt-get -y upgrade && apt-get -y --no-install-recommends install \
-    python3-sdformat13 gz-garden \
-    python3-colcon-common-extensions \
-    python3-vcstool ros-dev-tools \
+    apt-get update && apt-get -y upgrade && apt-get -y --no-install-recommends install \
     ros-${ROS_DISTRO}-ros-base \
-    ros-${ROS_DISTRO}-xacro \
-    ros-${ROS_DISTRO}-ros-gzgarden \
     ros-${ROS_DISTRO}-image-transport \
     ros-${ROS_DISTRO}-ament-cmake-auto \
     ros-${ROS_DISTRO}-diagnostic-updater \
+    ros-${ROS_DISTRO}-velodyne \
     ros-${ROS_DISTRO}-image-transport-plugins \
     ros-${ROS_DISTRO}-ament-cmake-clang-format \
-    ros-${ROS_DISTRO}-rmw-cyclonedds-cpp \
-    "~nros-${ROS_DISTRO}-rqt*" && \
+    ros-${ROS_DISTRO}-rmw-cyclonedds-cpp && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-
-# Use Cyclone DDS as middleware
+## Use Cyclone DDS as middleware
 ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-
-## Source the ROS2 Setup Script and save it in .bashrc
-RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ${HOME}/.bashrc && \
-    echo "source /usr/share/colcon_cd/function/colcon_cd.sh" >> ${HOME}/.bashrc && \
-    echo "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash" >> ${HOME}/.bashrc && \
-    echo "export _colcon_cd_root=/opt/ros/humble/" >> ${HOME}/.bashrc
-
 
 # ROS2 SETUP END
 
@@ -116,17 +99,38 @@ RUN echo "CUDA Version $CUDA_VERSION" > /usr/local/cuda/version.txt && \
 FROM base AS development
 
 # Additional Environment Variables
+
+ARG ROS_DISTRO='humble'
 ENV BOAT_WS='/root/roboboat_ws'
 
-# Setup Workspace
-RUN mkdir -p "${BOAT_WS}/src"
-WORKDIR "${BOAT_WS}/src"
-RUN echo "source ${BOAT_WS}/install/setup.bash" >> ${HOME}/.bashrc && \
+# Install additional development tools 
+
+RUN curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null && \
+    apt-get update && apt-get -y upgrade && apt-get -y -f --no-install-recommends install \
+    net-tools iputils-ping netcat \
+    python3-colcon-common-extensions \
+    python3-sdformat13 \
+    python3-vcstool ros-dev-tools \
+    ros-${ROS_DISTRO}-xacro \
+    ros-${ROS_DISTRO}-ros-gzgarden && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Setup ROS2 Development / Simulation Tools
+
+## Source the ROS2 Setup Script and save it in .bashrc
+RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ${HOME}/.bashrc && \
+    echo "source /usr/share/colcon_cd/function/colcon_cd.sh" >> ${HOME}/.bashrc && \
+    echo "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash" >> ${HOME}/.bashrc && \
+    echo "export _colcon_cd_root=/opt/ros/humble/" >> ${HOME}/.bashrc
+
+## Setup Workspace
+RUN mkdir -p "${BOAT_WS}/src" && \
+    cd "${BOAT_WS}/src" && \
+    echo "source ${BOAT_WS}/install/setup.bash" >> ${HOME}/.bashrc && \
     echo "cd ${BOAT_WS}" >> ${HOME}/.bashrc
 
 ## Download ZED ROS2 Wrapper & VRX Simulation
-WORKDIR ${BOAT_WS}/src
-### QUESTION is --depth 1 fine? It clones much faster but idk about its other implications
 RUN git clone --progress --verbose --recursive --depth 1 https://github.com/stereolabs/zed-ros2-wrapper.git && \
     git clone --progress --verbose --recursive --depth 1 https://github.com/osrf/vrx.git
 
@@ -142,6 +146,8 @@ RUN source /opt/ros/${ROS_DISTRO}/setup.bash && \
     '-DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs' \
     '-DCMAKE_CXX_FLAGS="-Wl,--allow-shlib-undefined"' && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Copy entrypoint script
 
 WORKDIR ${HOME}
 COPY ./Docker/entrypoint.sh ${HOME}
