@@ -29,7 +29,7 @@ ENV PATH="${PATH}:${HOME}/.local/bin"
 
 # Install Dependencies
 
-RUN apt-get update && apt-get -y upgrade && apt-get -y --no-install-recommends install \
+RUN apt-get update && apt-get -y --no-install-recommends install \
     cmake dialog bash-completion wget curl git lsb-release less locales \
     udev zstd apt-utils libgomp1 sudo software-properties-common \
     build-essential libpng-dev jq libopencv-dev libpq-dev usbutils \
@@ -49,7 +49,7 @@ RUN locale-gen en_US en_US.UTF-8 && \
 RUN add-apt-repository -y universe && \
     curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg && \
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null && \
-    apt-get update && apt-get -y upgrade && apt-get -y --no-install-recommends install \
+    apt-get update && apt-get -y --no-install-recommends install \
     ros-${ROS_DISTRO}-ros-base \
     ros-${ROS_DISTRO}-image-transport \
     ros-${ROS_DISTRO}-ament-cmake-auto \
@@ -106,8 +106,8 @@ ENV BOAT_WS='/root/roboboat_ws'
 # Install additional development tools 
 
 RUN curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg && \
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null && \
-    apt-get update && apt-get -y upgrade && apt-get -y -f --no-install-recommends install \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null && \
+    apt-get update && apt-get -y -f --no-install-recommends install \
     net-tools iputils-ping netcat \
     python3-colcon-common-extensions \
     python3-sdformat13 \
@@ -131,17 +131,18 @@ RUN mkdir -p "${BOAT_WS}/src" && \
     echo "cd ${BOAT_WS}" >> ${HOME}/.bashrc
 
 ## Download ZED ROS2 Wrapper & VRX Simulation
-RUN git clone --progress --verbose --recursive --depth 1 https://github.com/stereolabs/zed-ros2-wrapper.git && \
-    git clone --progress --verbose --recursive --depth 1 https://github.com/osrf/vrx.git
+WORKDIR "${BOAT_WS}/src"
+RUN git clone --progress --verbose --recurse-submodules https://github.com/stereolabs/zed-ros2-wrapper.git && \
+    git clone --progress --verbose --recurse-submodules https://github.com/osrf/vrx.git
 
 ## Install ALL Colcon packages
 WORKDIR ${BOAT_WS}
 RUN source /opt/ros/${ROS_DISTRO}/setup.bash && \
     apt-get update -y && \
     rosdep init && rosdep update && \
-    rosdep install --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} -y &&\
+    rosdep install --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} -y && \
     colcon build --parallel-workers $(nproc) --merge-install \
-    --event-handlers console_direct+ --base-paths src \
+    --event-handlers console_direct+ --base-paths src\
     --cmake-args '-DCMAKE_BUILD_TYPE=Release' \
     '-DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs' \
     '-DCMAKE_CXX_FLAGS="-Wl,--allow-shlib-undefined"' && \
