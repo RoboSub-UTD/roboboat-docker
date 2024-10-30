@@ -1,6 +1,7 @@
 name: Docker Image Build and Push
 
 on:
+  workflow_dispatch:
   push:
     branches: [ "main" ]
     paths:
@@ -15,5 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Build the Docker image
+    - name: Login to Dockerhub
+      run: docker login --username ${{ DOCKERHUB_USERNAME }} --password ${{ secrets.DOCKERHUB_PASSWORD }}
+    - name: Build and Push Docker Image
       run: docker compose build --push
