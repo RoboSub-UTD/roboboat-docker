@@ -5,10 +5,10 @@
 # Usage:
 # - To build the images:
 #     `docker compose build`
-# - To start up a specific service:
-#     `docker compose up <service_name>`
-# - To open an interactive shell to a running container:
-#     `docker exec -it <container_name> bash`
+# - To start up a specific service detatched:
+#     `docker compose up -d <service_name>`
+# - To open an attach to a running service:
+#     `docker compose attach <service_name>`
 #
 ##########################################################
 
