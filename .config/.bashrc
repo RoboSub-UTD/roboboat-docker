@@ -92,10 +92,3 @@ export NVS_HOME="$HOME/.nvs"
 # If set, the pattern "**" used in a pathname expansion context will
 # match all files and zero or more directories and subdirectories.
 shopt -s globstar
-
-# Enable starship prompt
-if command -v starship &>/dev/null; then
-    eval "$(starship init bash)"
-fi
-
-[ -f ~/.fzf.bash ] && source ~/.fzf.bash
