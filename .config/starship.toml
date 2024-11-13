@@ -1,32 +1,32 @@
 format = """
 [┌](fg:bold white)\
 [](green)\
-$username$hostname\
-[](bg:blue green)\
-$directory\
-[](blue)\
-$fill\
-[](fg:blue)\
-$container\
-$python\
-$git_branch\
-$git_status\
-[](fg:blue bg:red)\
- $status\
-[](fg:red bg:yellow)\
-$cmd_duration\
-[](yellow)
-[└─󰛿 ](fg:bold white)\
+($username$hostname)\
+[](green)[──](bold white)\
+$directory$fill\
+($container[──](bold white))\
+($git_branch$git_status[──](bold white))\
+($status[──](bold white))\
+($cmd_duration[──](bold white))[](bold white)
+[└─](fg:bold white)󰛿 \
 """
+
+continuation_prompt = '󰷫 '
 
 # Disable the blank line at the start of the prompt
 # add_newline = false
 
-# You can also replace your username with a neat symbol like  to save some space
+[profiles]
+transient = """[┌](bold white)$fill($cmd_duration[──](bold white))[](bold white)\n[└─](bold white)󰛿 """
+
+[fill]
+symbol = "─"
+style = "bold white"
+
 [username]
 show_always = true
 style_user  = "bg:green bold black"
-style_root  = "bg:green bold black"
+style_root  = "bg:green bold red"
 format      = '[$user]($style)'
 
 [hostname]
@@ -39,51 +39,105 @@ disabled   = false
 
 [directory]
 style             = "bg:blue bold black"
-format            = "[ $path ]($style)"
+format            = "[](blue)[$path]($style)[](blue)"
 truncation_length = 3
-truncation_symbol = "…/"
+truncation_symbol = " /"
 read_only         = "󰌾"
 
-[container]
-style = "bg:blue bold black"
-format = '[$symbol \[$name\]]($style)'
-
-# Here is how you can shorten some long paths by text replacement
-# similar to mapped_locations in Oh My Posh:
 [directory.substitutions]
+"~" = " "
 "Documents" = "󰈙 "
 "Downloads" = " "
 "Music"     = " "
 "Pictures"  = " "
+"Videos"  = " "
 
+[container]
+style = "bg:blue bold black"
+format = '[](blue)[$symbol \[$name\]]($style)[](blue)'
+
+# Here is how you can shorten some long paths by text replacement
+# similar to mapped_locations in Oh My Posh:
 [git_branch]
-style  = "bg:blue bold black"
-format = "[ on $symbol$branch(:$remote_branch)]($style)"
+style  = "bg:purple bold black"
+format = "[](purple)[$symbol$branch(:$remote_branch)]($style)"
 symbol = " "
 
 [git_status]
-style = "bg:blue bold black"
-format = '([\[$all_status$ahead_behind\]]($style))'
+style = "bg:purple bold black"
+format = '([\[ $all_status$ahead_behind\]]($style))[](purple)'
 
 [cmd_duration]
 min_time = 250
 style = "bg:yellow bold black"
-format = "[ $duration]($style)"
+format = "[](yellow)[$duration]($style)[](yellow)"
 
 [status]
 disabled = false
-symbol = "✖"
+symbol = " "
 style = "bg:red bold black"
-format = "[$symbol]($style)"
+format = "[](red)[$symbol]($style)[](red)"
 
-[fill]
-style = "bold white"
+# [fill]
+# style = "bold white"
+
+[aws]
+symbol = "  "
+
+[buf]
+symbol = " "
 
 [c]
 symbol = " "
 
+[conda]
+symbol = " "
+
+[crystal]
+symbol = " "
+
+[dart]
+symbol = " "
+
+
 [docker_context]
 symbol = " "
+
+[elixir]
+symbol = " "
+
+[elm]
+symbol = " "
+
+[fennel]
+symbol = " "
+
+[fossil_branch]
+symbol = " "
+
+[golang]
+symbol = " "
+
+[guix_shell]
+symbol = " "
+
+[haskell]
+symbol = " "
+
+[haxe]
+symbol = " "
+
+[hg_branch]
+symbol = " "
+
+[java]
+symbol = " "
+
+[julia]
+symbol = " "
+
+[kotlin]
+symbol = " "
 
 [lua]
 symbol = " "
@@ -93,6 +147,18 @@ symbol = "󰍛 "
 
 [meson]
 symbol = "󰔷 "
+
+[nim]
+symbol = "󰆥 "
+
+[nix_shell]
+symbol = " "
+
+[nodejs]
+symbol = " "
+
+[ocaml]
+symbol = " "
 
 [os.symbols]
 Alpaquita = " "
@@ -138,7 +204,34 @@ Windows = "󰍲 "
 [package]
 symbol = "󰏗 "
 
+[perl]
+symbol = " "
+
+[php]
+symbol = " "
+
+[pijul_channel]
+symbol = " "
+
 [python]
 format = '[${symbol}${pyenv_prefix}(${version})(\($virtualenv\) )]($style)'
 style = "bg:blue bold black"
 symbol = " "
+
+[rlang]
+symbol = "󰟔 "
+
+[ruby]
+symbol = " "
+
+[rust]
+symbol = " "
+
+[scala]
+symbol = " "
+
+[swift]
+symbol = " "
+
+[zig]
+symbol = " "
