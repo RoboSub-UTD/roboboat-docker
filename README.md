@@ -3,7 +3,6 @@
 ```bash
 .
 ├── .config/
-│   ├── nvim/
 │   ├── .bash.d
 │   ├── .bashrc
 │   ├── setup-development-enviornment.sh
@@ -25,10 +24,6 @@ You would normally do this whenever you are starting the container in order to a
 docker compose up -d development
 docker compose attach development # optional: attach to it later, or with VSCode
 ```
-
-## Setting up Development Environment with NeoVIM
-
-When running the development service, run `./.config/setup-development-enviornment.sh` and then `source ~/.bashrc` once it finishes
 
 ## Simulation
 
