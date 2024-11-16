@@ -174,6 +174,8 @@ RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o 
     python3-vcstool ros-dev-tools \
     python3-colcon-common-extensions \
     ros-${ROS_DISTRO}-ros-base \
+    ros-${ROS_DISTRO}-point-cloud-transport \
+    ros-${ROS_DISTRO}-robot-localization \
     ros-${ROS_DISTRO}-velodyne \
     ros-${ROS_DISTRO}-rmw-cyclonedds-cpp && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
