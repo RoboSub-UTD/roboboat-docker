@@ -1,3 +1,5 @@
 src/log/
 src/build/
 src/install/
+.config/nvim/
+.config/setup-development-enviornment.sh
