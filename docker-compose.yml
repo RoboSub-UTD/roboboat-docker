@@ -42,8 +42,6 @@ services:
       # Allows graphical programs in the container.
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - ${XAUTHORITY:-$HOME/.Xauthority}:/root/.Xauthority
-      # ZED SDK Resources
-      - ${HOME}/zed_docker_ai/:/usr/local/zed/resources/
       # Access to all Host Devices
       - /dev:/dev
       # Share config / src Directories
@@ -85,7 +83,5 @@ services:
     device_cgroup_rules:
       - "c 189:* rmw"
     volumes:
-      # ZED SDK Resources
-      - ${HOME}/zed_docker_ai/:/usr/local/zed/resources/
       # Access to all Host Devices
       - /dev:/dev
