@@ -1,5 +1,7 @@
 src/log/
 src/build/
 src/install/
+*backup
+.direnv
 .config/nvim/
 .config/setup-development-enviornment.sh
