@@ -1,5 +1,5 @@
 # [TODO] Find faster mirrors again, and uncomment this and `sed` lines
-ARG ROS_DISTRO='humble'
+ARG ROS_DISTRO='jazzy'
 ARG DEBIAN_FRONTEND='noninteractive'
 
 ###############
@@ -19,20 +19,20 @@ ENV HOME="/${USER}"
 ENV BOAT_WS="${HOME}/roboboat_ws"
 RUN mkdir -p "${BOAT_WS}/src"
 
-# [INFO] Install the default Gazebo pairing with the ROS2 distribution
-RUN wget https://packages.osrfoundation.org/gazebo.gpg -O /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg && \
-  echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null && \
-  add-apt-repository -y universe && \
-  apt-get update && apt-get -y --no-install-recommends install \
+# Install base packages
+RUN apt-get update && apt-get -y --no-install-recommends install \
   cmake wget curl git lsb-release build-essential \
-  software-properties-common python3-sdformat13  \
-  # ROS2 Gazebo Packages
-  gz-fortress \
-  ros-${ROS_DISTRO}-ros-gzfortress \
+  gnupg software-properties-common \
+  && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# [INFO] Install the default Gazebo pairing with the ROS2 distribution
+RUN add-apt-repository -y universe && \
+  apt-get update && apt-get -y --no-install-recommends install \
+  ros-${ROS_DISTRO}-ros-gz \
   ros-${ROS_DISTRO}-xacro \
+  ros-${ROS_DISTRO}-image-transport \
   python3-colcon-common-extensions \
-  ros-${ROS_DISTRO}-image-transport && \
-  apt-get clean && rm -rf /var/lib/apt/lists/*
+  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # [TODO] Add ZED SDK support
 # [INFO] Build the VRX simulation and ZED ROS2 Wrapper packages
@@ -44,13 +44,13 @@ WORKDIR ${BOAT_WS}/src
 RUN git clone --progress --verbose --recursive --depth 1 --branch ${VRX_BRANCH} https://github.com/${VRX_REPO}.git && \
   # git clone --progress --verbose --recursive --depth 1 --branch ${ZED_BRANCH} https://github.com/${ZED_REPO}.git && \
   cd ${BOAT_WS} && source /opt/ros/${ROS_DISTRO}/setup.bash && \
-  colcon build --symlink-install --parallel-workers $(nproc) --cmake-args=-DCMAKE_BUILD_TYPE=Release --base-paths src && \
+  colcon build --merge-install --parallel-workers $(nproc) --cmake-args=-DCMAKE_BUILD_TYPE=Release --base-paths src && \
   apt-get clean && rm -rf /var/lib/apt/lists/*
 
 ##############
 # BASE IMAGE #
 ##############
-FROM ros:humble-ros-core AS base
+FROM ros:${ROS_DISTRO}-ros-core AS base
 SHELL ["/bin/bash", "-c"]
 
 RUN sed -i 's,http://[^ ]*archive\.ubuntu\.com/ubuntu,mirror://mirrors.ubuntu.com/mirrors.txt,g' /etc/apt/sources.list
@@ -61,18 +61,14 @@ ENV HOME="/${USER}"
 ENV BOAT_WS="${HOME}/roboboat_ws"
 RUN mkdir -p ${BOAT_WS}
 
-## ROS2
-ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-
 ## .bashrc
 COPY .config/.bashrc ${HOME}/.bashrc
 COPY .config/.bash.d ${HOME}/.bash.d
 
 # Install common packges
 RUN apt-get update && apt-get -y --no-install-recommends install \
-  software-properties-common apt-utils wget curl \
-  python3-minimal python-is-python3 python3-pip \
-  python3-vcstool ros-dev-tools \
+  software-properties-common apt-utils wget curl libturbojpeg\
+  python3-minimal python-is-python3 python3-pip python3-vcstool \
   python3-colcon-common-extensions \
   ros-${ROS_DISTRO}-point-cloud-transport \
   ros-${ROS_DISTRO}-robot-localization \
@@ -80,6 +76,12 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
   ros-${ROS_DISTRO}-rmw-cyclonedds-cpp && \
   apt-get clean && rm -rf /var/lib/apt/lists/*
 
+## ROS2
+ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+
+
+# Copy files from the builder
+COPY --from=builder ${BOAT_WS}/install ${BOAT_WS}/install
 # Add ROS2-Specific configurations to `.bashrc`
 RUN echo "source ${BOAT_WS}/install/setup.bash" >> ${HOME}/.bashrc && \
   echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ${HOME}/.bashrc && \
@@ -98,25 +100,11 @@ ENTRYPOINT "${HOME}/entrypoint.sh"
 #####################
 FROM base AS development
 
-# Copy files from the builder
-COPY --from=builder_vrx ${BOAT_WS}/install ${BOAT_WS}/install
-
 # Install Dependencies
 RUN apt-get update && apt-get -y --no-install-recommends install \
-  net-tools iputils-ping \ 
-  libturbojpeg && \
-  apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Install Gazebo Garden
-RUN wget https://packages.osrfoundation.org/gazebo.gpg -O /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg && \
-  echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null && \
-  apt-get update && apt-get -y --no-install-recommends install \
-  python3-sdformat13 gz-fortress \
-  python3-colcon-common-extensions \
-  ros-${ROS_DISTRO}-xacro \
-  ros-${ROS_DISTRO}-ros-gzgarden \
-  ros-${ROS_DISTRO}-image-transport \
-  ros-${ROS_DISTRO}-rmw-cyclonedds-cpp && \
+  net-tools iputils-ping ros-dev-tools \ 
+  ros-${ROS_DISTRO}-ros-gz \
+  && \
   apt-get clean && rm -rf /var/lib/apt/lists/*
 
 #################
