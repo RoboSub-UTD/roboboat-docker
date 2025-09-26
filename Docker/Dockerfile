@@ -1,5 +1,4 @@
 # [TODO] Find faster mirrors again, and uncomment this and `sed` lines
-# ARG MIRROR='http://dal.mirrors.clouvider.net' # [INFO] Found using apt-select --country US -t 10 
 ARG ROS_DISTRO='humble'
 ARG DEBIAN_FRONTEND='noninteractive'
 
@@ -9,8 +8,8 @@ ARG DEBIAN_FRONTEND='noninteractive'
 FROM ros:${ROS_DISTRO}-ros-core AS builder
 SHELL ["/bin/bash", "-c"]
 
-# Use Faster Mirrors
-# RUN sed -r -i "s,http://(.*).ubuntu.com,${MIRROR}," /etc/apt/sources.list
+# Use faster mirrors
+RUN sed -i "s,http://[^ ]*archive\.ubuntu\.com/ubuntu,mirror://mirrors.ubuntu.com/mirrors.txt,g" /etc/apt/sources.list
 
 # Setup Environment
 ENV USER='root'
@@ -54,7 +53,7 @@ RUN git clone --progress --verbose --recursive --depth 1 --branch ${VRX_BRANCH} 
 FROM ros:humble-ros-core AS base
 SHELL ["/bin/bash", "-c"]
 
-# RUN sed -r -i "s,http://(.*).ubuntu.com,${MIRROR}," /etc/apt/sources.list
+RUN sed -i 's,http://[^ ]*archive\.ubuntu\.com/ubuntu,mirror://mirrors.ubuntu.com/mirrors.txt,g' /etc/apt/sources.list
 
 # Setup Environment
 ENV USER='root'
