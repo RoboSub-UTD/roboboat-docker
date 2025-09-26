@@ -2,10 +2,6 @@
   description = "A quick flake for Dockerfile development";
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
-    nix-conf = {
-      url = "github:wentasah/nix-conf";
-      flake = false;
-    };
   };
 
   outputs =
@@ -19,22 +15,28 @@
           pkgs = import nixpkgs {
             inherit system;
           };
-          # Import the veridian package from nix-conf
-          veridian = pkgs.callPackage "${inputs.nix-conf}/pkgs/veridian/default.nix" { };
         in
         pkgs.mkShell {
           # create an environment with nodejs_18, pnpm, and yarn
           packages = with pkgs; [
+            harper
+            marksman
+            docker-compose
+            docker-client
+            docker-buildx
             dockerfile-language-server-nodejs
             docker-compose-language-service
             yaml-language-server
             lazygit
           ];
-
           shellHook = ''
-            echo "You're in the SystemVerilog development shell using the 'iverilog' simulator"
+            mkdir -p "$HOME/.docker/cli-plugins"
+            ln -sf "$(which docker-buildx)" "$HOME/.docker/cli-plugins/docker-buildx"
           '';
+          # Environment variables
+          COMPOSE_BAKE = true;
+          DOCKER_BUILDKIT = true;
+          COMPOSE_DOCKER_CLI_BUILD = true;
         };
     };
 }
-
