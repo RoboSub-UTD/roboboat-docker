@@ -19,6 +19,9 @@ services:
       context: .
       dockerfile: Docker/Dockerfile
       target: development
+      platforms:
+        - 'linux/amd64'
+        - 'linux/arm64'
     # Interactive shell
     tty: True
     stdin_open: True
@@ -27,7 +30,7 @@ services:
     network_mode: host
     ipc: host
     # NVidia Runtime
-    runtime: nvidia
+    # runtime: nvidia
     environment:
       # Needed to define a TurtleBot3 model type
       - TURTLEBOT3_MODEL=burger
@@ -57,31 +60,34 @@ services:
     tty: False
     stdin_open: False
     command: ros2 doctor
-  release:
-    image: utdrobosub/roboboat-2025:release
-    build:
-      context: .
-      dockerfile: Docker/Dockerfile
-      target: release
-    # Interactive shell
-    tty: True
-    stdin_open: True
-    privileged: True
-    # Networking and IPC for ROS 2
-    network_mode: host
-    ipc: host
-    # NVidia Runtime
-    runtime: nvidia
-    environment:
-      # Needed to define a TurtleBot3 model type
-      - TURTLEBOT3_MODEL=burger
-      # Allows graphical programs in the container.
-      - DISPLAY=${DISPLAY}
-      - QT_X11_NO_MITSHM=1
-      - NVIDIA_DRIVER_CAPABILITIES=all
-    # Devices:
-    device_cgroup_rules:
-      - "c 189:* rmw"
-    volumes:
-      # Access to all Host Devices
-      - /dev:/dev
+  # release:
+  #   image: utdrobosub/roboboat-2025:release
+  #   build:
+  #     context: .
+  #     dockerfile: Docker/Dockerfile
+  #     target: release
+  #     platforms:
+  #       - 'linux/amd64'
+  #       - 'linux/arm64'
+  #   # Interactive shell
+  #   tty: True
+  #   stdin_open: True
+  #   privileged: True
+  #   # Networking and IPC for ROS 2
+  #   network_mode: host
+  #   ipc: host
+  #   # NVidia Runtime
+  #   runtime: nvidia
+  #   environment:
+  #     # Needed to define a TurtleBot3 model type
+  #     - TURTLEBOT3_MODEL=burger
+  #     # Allows graphical programs in the container.
+  #     - DISPLAY=${DISPLAY}
+  #     - QT_X11_NO_MITSHM=1
+  #     - NVIDIA_DRIVER_CAPABILITIES=all
+  #   # Devices:
+  #   device_cgroup_rules:
+  #     - "c 189:* rmw"
+  #   volumes:
+  #     # Access to all Host Devices
+  #     - /dev:/dev
