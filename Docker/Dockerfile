@@ -6,7 +6,7 @@ ARG BOAT_WS="${HOME}/roboboat_ws"
 
 ARG PKGS_BASE="git wget curl jq"
 ARG PKGS_DEV="software-properties-common apt-utils python3-minimal python-is-python3 python3-pip python3-vcstool python3-colcon-common-extensions net-tools iputils-ping ros-dev-tools  ros-${ROS_DISTRO}-velodyne ros-${ROS_DISTRO}-rmw-cyclonedds-cpp ros-${ROS_DISTRO}-point-cloud-transport ros-${ROS_DISTRO}-robot-localization libturbojpeg"
-ARG PKGS_SIM="gz-harmonic"
+ARG PKGS_SIM="ros-${ROS_DISTRO}-ros-gzharmonic gz-harmonic"
 
 # ZED SDK args
 ARG ZED_SDK_URL="https://download.stereolabs.com/zedsdk/5.0/cu12/ubuntu22"
@@ -53,7 +53,8 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
 # Install Gazebo Harmonic, dependency for osrf/vrx
 RUN curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg && \
   echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] https://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null && \
-  apt-get update -y && apt-get install -y --no-install-recommends ${PKGS_SIM}
+  apt-get update -y && apt-get install -y --no-install-recommends ${PKGS_SIM} \
+  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 ARG VRX_REPO='osrf/vrx'
 ARG VRX_BRANCH='v3.0.4'
@@ -83,6 +84,7 @@ RUN sed -i 's,http://[^ ]*archive\.ubuntu\.com/ubuntu,mirror://mirrors.ubuntu.co
 # Setup Environment
 ARG PKGS_BASE 
 ARG PKGS_SIM
+ARG PKGS_DEV
 ARG BOAT_WS
 ARG ROS_DISTRO 
 ARG USER="root"
@@ -97,10 +99,11 @@ RUN mkdir -p ${BOAT_WS}
 COPY .config/.bashrc ${HOME}/.bashrc
 COPY .config/.bash.d ${HOME}/.bash.d
 
-# Install common packges
-RUN apt-get update && apt-get -y --no-install-recommends install \
-  ${PKGS_BASE} ${PKGS_DEV} && \
-  apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg && \
+  echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] https://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null && \
+  apt-get update -y && apt-get install -y --no-install-recommends \
+  ${PKGS_BASE} ${PKGS_DEV} ${PKGS_SIM} \
+  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Set the RMW implementation to CycloneDDS
 ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp

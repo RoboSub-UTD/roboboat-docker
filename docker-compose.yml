@@ -37,7 +37,7 @@ services:
       # Allows graphical programs in the container.
       - DISPLAY=${DISPLAY}
       - QT_X11_NO_MITSHM=1
-      - NVIDIA_DRIVER_CAPABILITIES=all
+      # - NVIDIA_DRIVER_CAPABILITIES=all
     # Devices:
     device_cgroup_rules:
       - "c 189:* rmw"
@@ -54,7 +54,7 @@ services:
     extends: development
     tty: False
     stdin_open: False
-    command: ros2 launch vrx_gz competition.launch.py
+    command: ros2 launch vrx_gz vrx_environment.launch.py world:=nbpark
   healthcheck:
     extends: development
     tty: False
