@@ -6,7 +6,7 @@ ARG BOAT_WS="${HOME}/roboboat_ws"
 
 ARG PKGS_BASE="git wget curl jq"
 ARG PKGS_DEV="software-properties-common apt-utils python3-minimal python-is-python3 python3-pip python3-vcstool python3-colcon-common-extensions net-tools iputils-ping ros-dev-tools  ros-${ROS_DISTRO}-velodyne ros-${ROS_DISTRO}-rmw-cyclonedds-cpp ros-${ROS_DISTRO}-point-cloud-transport ros-${ROS_DISTRO}-robot-localization libturbojpeg"
-ARG PKGS_SIM="ros-${ROS_DISTRO}-ros-gzharmonic gz-harmonic"
+ARG PKGS_SIM="ros-${ROS_DISTRO}-ros-gz gz-harmonic"
 
 # ZED SDK args
 ARG ZED_SDK_URL="https://download.stereolabs.com/zedsdk/5.0/cu12/ubuntu22"
