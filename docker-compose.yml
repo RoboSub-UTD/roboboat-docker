@@ -54,7 +54,7 @@ services:
     extends: development
     tty: False
     stdin_open: False
-    command: ros2 launch vrx_gz vrx_environment.launch.py world:=nbpark
+    command: ros2 launch vrx_gz competition.launch.py 
   healthcheck:
     extends: development
     tty: False
