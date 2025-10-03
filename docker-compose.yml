@@ -49,7 +49,7 @@ services:
       - /dev:/dev
       # Share config / src Directories
       - ./.config:/root/.config
-      - ./src/roboboat2025_ros2:/root/roboboat_ws/src/roboboat2025_ros2
+      # - ./src/roboboat2025_ros2:/root/roboboat_ws/src/roboboat2025_ros2
   sim:
     extends: development
     tty: False
