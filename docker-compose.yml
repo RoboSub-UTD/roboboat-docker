@@ -21,7 +21,7 @@ services:
       target: development
       platforms:
         - 'linux/amd64'
-        - 'linux/arm64'
+        # - 'linux/arm64'
     # Interactive shell
     tty: True
     stdin_open: True
