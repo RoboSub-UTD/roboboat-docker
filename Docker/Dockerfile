@@ -4,9 +4,9 @@ ARG USER="root"
 ARG HOME="/${USER}"
 ARG BOAT_WS="${HOME}/roboboat_ws"
 
-ARG PKGS_BASE="git wget curl jq protobuf-compiler libprotobuf-dev"
+ARG PKGS_BASE="git wget curl jq protobuf-compiler libprotobuf-dev lsb-release gnupg"
 ARG PKGS_DEV="software-properties-common apt-utils python3-minimal python-is-python3 python3-pip python3-vcstool python3-colcon-common-extensions net-tools iputils-ping ros-dev-tools  ros-${ROS_DISTRO}-velodyne ros-${ROS_DISTRO}-rmw-cyclonedds-cpp ros-${ROS_DISTRO}-point-cloud-transport ros-${ROS_DISTRO}-robot-localization libturbojpeg"
-ARG PKGS_SIM="ros-${ROS_DISTRO}-ros-gz gz-harmonic"
+ARG PKGS_SIM="gz-harmonic"
 
 # ZED SDK args
 ARG ZED_SDK_URL="https://download.stereolabs.com/zedsdk/5.0/cu12/ubuntu22"
@@ -54,6 +54,8 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
 RUN curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg && \
   echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] https://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null && \
   apt-get update -y && apt-get install -y --no-install-recommends ${PKGS_SIM} \
+  && apt-get update \
+  && apt-get install -y --no-install-recommends "ros-humble-ros-gzharmonic" \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 ARG VRX_REPO='osrf/vrx'
@@ -103,6 +105,8 @@ RUN curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyri
   echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] https://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null && \
   apt-get update -y && apt-get install -y --no-install-recommends \
   ${PKGS_BASE} ${PKGS_DEV} ${PKGS_SIM} \
+  && apt-get update \
+  && apt-get install -y --no-install-recommends "ros-humble-ros-gzharmonic" \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Set the RMW implementation to CycloneDDS
