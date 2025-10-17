@@ -14,7 +14,7 @@
 
 services:
   development:
-    image: utdrobosub/roboboat-2025:development
+    image: utdrobosub/roboboat-2026:development
     build:
       context: .
       dockerfile: Docker/Dockerfile

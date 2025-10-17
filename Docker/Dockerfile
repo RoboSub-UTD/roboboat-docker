@@ -4,7 +4,7 @@ ARG USER="root"
 ARG HOME="/${USER}"
 ARG BOAT_WS="${HOME}/roboboat_ws"
 
-ARG PKGS_BASE="git wget curl jq"
+ARG PKGS_BASE="git wget curl jq protobuf-compiler libprotobuf-dev"
 ARG PKGS_DEV="software-properties-common apt-utils python3-minimal python-is-python3 python3-pip python3-vcstool python3-colcon-common-extensions net-tools iputils-ping ros-dev-tools  ros-${ROS_DISTRO}-velodyne ros-${ROS_DISTRO}-rmw-cyclonedds-cpp ros-${ROS_DISTRO}-point-cloud-transport ros-${ROS_DISTRO}-robot-localization libturbojpeg"
 ARG PKGS_SIM="ros-${ROS_DISTRO}-ros-gz gz-harmonic"
 
@@ -109,7 +109,7 @@ RUN curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyri
 ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
 # Copy files from the builder
-COPY --from=builder ${BOAT_WS}/install ${BOAT_WS}/install
+COPY --from=builder ${BOAT_WS} ${BOAT_WS} 
 # Add ROS2-Specific configurations to `.bashrc`
 RUN /bin/bash -c "\
   echo 'source /opt/ros/${ROS_DISTRO}/setup.bash' >> ${HOME}/.bashrc; \
