@@ -30,14 +30,20 @@ services:
     network_mode: host
     ipc: host
     # NVidia Runtime
-    # runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
     environment:
       # Needed to define a TurtleBot3 model type
       - TURTLEBOT3_MODEL=burger
       # Allows graphical programs in the container.
       - DISPLAY=${DISPLAY}
       - QT_X11_NO_MITSHM=1
-      # - NVIDIA_DRIVER_CAPABILITIES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
     # Devices:
     device_cgroup_rules:
       - "c 189:* rmw"
