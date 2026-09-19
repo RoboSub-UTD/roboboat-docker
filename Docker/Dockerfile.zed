@@ -1,0 +1,67 @@
+# =============================================================================
+# ZED ROS 2 wrapper image for the Unity simulator (ZED SDK simulation mode).
+#
+# Separate from Docker/Dockerfile on purpose: the development image bind-mounts
+# CUDA from the host at runtime, so the wrapper cannot be compiled inside it.
+# This image starts from a StereoLabs base that already ships CUDA 12.8 and the
+# ZED SDK 5.4.1 (the version the Unity-side streamer library reports), adds
+# ROS 2 Humble from apt and builds zed-ros2-wrapper v5.4.1 into /root/zed_ws.
+#
+# Build / run via docker-compose: `docker compose build zed-sim && docker compose up zed-sim`
+# =============================================================================
+ARG BASE_IMAGE=stereolabs/zed:5.4.1-devel-cuda12.8-ubuntu22.04
+FROM ${BASE_IMAGE}
+
+ARG ROS_DISTRO=humble
+ARG ZED_WRAPPER_TAG=v5.4.1
+ARG ZED_WS=/root/zed_ws
+ENV ROS_DISTRO=${ROS_DISTRO}
+ENV ZED_WS=${ZED_WS}
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Etc/UTC
+ENV NVIDIA_DRIVER_CAPABILITIES=${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}compute,video,utility
+
+# Tooling + locale (mirrors stereolabs' own docker/Dockerfile)
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
+  apt-get update && apt-get install -y --no-install-recommends \
+  apt-utils dialog locales curl wget gnupg2 lsb-release software-properties-common \
+  build-essential cmake git jq less udev sudo zstd usbutils \
+  python3 python3-dev python3-pip python3-wheel libopencv-dev libpq-dev && \
+  locale-gen en_US en_US.UTF-8 && update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 && \
+  rm -rf /var/lib/apt/lists/*
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
+
+# ROS 2 Humble (apt) + CycloneDDS, matching the development image's RMW
+RUN add-apt-repository -y universe && \
+  curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg && \
+  echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo ${UBUNTU_CODENAME}) main" \
+  > /etc/apt/sources.list.d/ros2.list && \
+  apt-get update && apt-get install -y --no-install-recommends \
+  ros-${ROS_DISTRO}-ros-base ros-dev-tools python3-colcon-common-extensions python3-rosdep \
+  ros-${ROS_DISTRO}-rmw-cyclonedds-cpp && \
+  rosdep init || true && rosdep update --rosdistro ${ROS_DISTRO} && \
+  rm -rf /var/lib/apt/lists/*
+ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+
+# zed-ros2-wrapper (pinned to the SDK version)
+RUN mkdir -p ${ZED_WS}/src && cd ${ZED_WS}/src && \
+  git clone --recursive --depth 1 --branch ${ZED_WRAPPER_TAG} https://github.com/stereolabs/zed-ros2-wrapper.git
+
+RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/setup.bash && \
+  apt-get update && \
+  apt-mark hold libopencv-dev nvidia-opencv-dev nvidia-opencv libopencv-python libopencv-samples opencv-licenses opencv-samples-data 2>/dev/null || true && \
+  rosdep install --from-paths ${ZED_WS}/src --ignore-src -r -y --rosdistro ${ROS_DISTRO} --skip-keys libopencv-dev && \
+  cd ${ZED_WS} && \
+  colcon build --parallel-workers \$(nproc) --event-handlers console_direct+ \
+    --packages-up-to zed_ros2 \
+    --cmake-args ' -DCMAKE_BUILD_TYPE=Release' ' -DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs' ' -DCMAKE_CXX_FLAGS=-Wl,--allow-shlib-undefined' ' --no-warn-unused-cli' && \
+  rm -rf ${ZED_WS}/build ${ZED_WS}/log /var/lib/apt/lists/*"
+
+# Parameter overrides for the simulated camera (depth mode etc.)
+COPY Docker/zed/zed_sim_override.yaml /root/zed_sim_override.yaml
+COPY Docker/zed/entrypoint.sh /root/zed_entrypoint.sh
+RUN chmod +x /root/zed_entrypoint.sh
+
+ENTRYPOINT ["/root/zed_entrypoint.sh"]
+CMD ["bash"]

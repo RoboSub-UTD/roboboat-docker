@@ -1,0 +1,27 @@
+# Parameter overrides applied on top of zed_wrapper's common_stereo.yaml + zed2i.yaml when the
+# wrapper runs against the Unity simulator (ZED SDK simulation mode). Passed to the launch file
+# through `ros_params_override_path`.
+---
+/**:
+    ros__parameters:
+        general:
+            pub_frame_rate: 30.0 # the Unity streamer sends 30 fps; sim mode otherwise forces 60
+            # Hardware-corruption heuristic (flags static/blank consecutive frames as CORRUPTED FRAME);
+            # meaningless for a rendered stream and it fires on calm scenes.
+            enable_image_validity_check: 0
+        video:
+            # Lazy topics (cost nothing until subscribed). The side-by-side stereo image is the quickest
+            # way to check the pair the SDK actually decodes: near objects must be shifted between halves.
+            publish_left_right: true
+            publish_stereo: true
+        depth:
+            depth_mode: 'NEURAL_LIGHT' # lightest neural mode: the RTX 3050 also renders HDRP and encodes the stream
+            point_cloud_freq: 10.0
+            publish_depth_confidence: true # lazy topic, see video above
+        sensors:
+            # A streamed (simulated) camera has no live IMU FIFO: its IMU sample rides on each frame.
+            # Without this the wrapper polls TIME_REFERENCE::CURRENT and logs INVALID FUNCTION PARAMETERS.
+            sensors_image_sync: true
+            sensors_pub_rate: 30.0
+        pos_tracking:
+            pos_tracking_enabled: false # enable once the stream is proven; needs depth + IMU to be sane first
