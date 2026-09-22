@@ -3,7 +3,7 @@ ROS_DIR="/opt/ros/${ROS_DISTRO}"
 if [ -d "$ROS_DIR" ]; then
     source ${ROS_DIR}/setup.bash
     source "/usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash"
-    source "${BOAT_WS}/install/setup.bash"
+    [ -f "${BOAT_WS}/install/setup.bash" ] && source "${BOAT_WS}/install/setup.bash"
     source "/usr/share/colcon_cd/function/colcon_cd.sh"
 
     eval "$(register-python-argcomplete3 ros2)"

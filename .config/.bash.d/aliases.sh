@@ -26,8 +26,3 @@ if [ -x /usr/bin/dircolors ]; then
     alias fgrep='fgrep --color=auto'
     alias egrep='egrep --color=auto'
 fi
-
-# apt is nala if nala is installed
-if [ -x /usr/bin/apt ] && [ -x /usr/bin/nala ]; then
-    alias apt='nala'
-fi

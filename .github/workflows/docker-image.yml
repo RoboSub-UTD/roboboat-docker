@@ -6,10 +6,12 @@ on:
     branches: [ "main" ]
     paths:
       - 'Docker/Dockerfile'
+      - 'Docker/Dockerfile.zed'
   pull_request:
     branches: [ "main" ]
     paths:
       - 'Docker/Dockerfile'
+      - 'Docker/Dockerfile.zed'
 
 jobs:
   build:

@@ -14,7 +14,7 @@
 
 services:
   development:
-    image: utdrobosub/roboboat-2026:development
+    image: utdrobosub/roboboat:development
     build:
       context: .
       dockerfile: Docker/Dockerfile
@@ -29,18 +29,10 @@ services:
     # Networking and IPC for ROS 2
     network_mode: host
     ipc: host
-    # NVidia Runtime
-    runtime: nvidia
     environment:
-      # Needed to define a TurtleBot3 model type
-      - TURTLEBOT3_MODEL=burger
       # Allows graphical programs in the container.
       - DISPLAY=${DISPLAY}
       - QT_X11_NO_MITSHM=1
-      - NVIDIA_DRIVER_CAPABILITIES=all
-      - gpus all
-      - LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/usr/lib/host-nvidia:/usr/local/cuda-13.0/lib64:/usr/local/cuda/lib64
-      - PATH=/usr/local/cuda/bin:/usr/bin:/bin
     device_cgroup_rules:
       - "c 189:* rmw"
     volumes:
@@ -51,69 +43,25 @@ services:
       - /dev:/dev
       # Share config / src Directories
       - ./.config:/root/.config
-      # - ./src/roboboat2025_ros2:/root/roboboat_ws/src/roboboat2025_ros2
-      - /usr/lib/x86_64-linux-gnu:/usr/lib/host-nvidia
-      - /usr/local/cuda-13.0:/usr/local/cuda
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
-  sim:
-    extends: development
-    tty: False
-    stdin_open: False
-    command: ros2 launch vrx_gz competition.launch.py 
   healthcheck:
     extends: development
     tty: False
     stdin_open: False
     command: ros2 doctor
-  # release:
-  #   image: utdrobosub/roboboat-2025:release
-  #   build:
-  #     context: .
-  #     dockerfile: Docker/Dockerfile
-  #     target: release
-  #     platforms:
-  #       - 'linux/amd64'
-  #       - 'linux/arm64'
-  #   # Interactive shell
-  #   tty: True
-  #   stdin_open: True
-  #   privileged: True
-  #   # Networking and IPC for ROS 2
-  #   network_mode: host
-  #   ipc: host
-  #   # NVidia Runtime
-  #   runtime: nvidia
-  #   environment:
-  #     # Needed to define a TurtleBot3 model type
-  #     - TURTLEBOT3_MODEL=burger
-  #     # Allows graphical programs in the container.
-  #     - DISPLAY=${DISPLAY}
-  #     - QT_X11_NO_MITSHM=1
-  #     - NVIDIA_DRIVER_CAPABILITIES=all
-  #   # Devices:
-  #   device_cgroup_rules:
-  #     - "c 189:* rmw"
-  #   volumes:
-  #     # Access to all Host Devices
-  #     - /dev:/dev
 
   # ZED ROS 2 wrapper in ZED SDK *simulation mode*, fed by the virtual ZED 2 in the Unity
   # simulator (crane_sim, ZedSimCamera on Blastoise). Separate image (Docker/Dockerfile.zed):
   # the development image is left untouched. Host networking is required: the stream is RTP/UDP
   # from Unity on the host to 127.0.0.1:30000.
+  # This is the only service that needs an NVIDIA GPU + the NVIDIA Container Toolkit.
   zed-sim:
-    image: utdrobosub/roboboat-2026:zed-sim
+    image: utdrobosub/roboboat:zed-sim
     build:
       context: .
       dockerfile: Docker/Dockerfile.zed
     network_mode: host
     ipc: host
+    # NVidia Runtime (required: the ZED SDK is CUDA-only)
     runtime: nvidia
     environment:
       - NVIDIA_DRIVER_CAPABILITIES=all
@@ -132,6 +80,7 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
+    # Automatically opens the zed camera 
     command: >
       ros2 launch zed_wrapper zed_camera.launch.py
       camera_model:=zed2 camera_name:=zed

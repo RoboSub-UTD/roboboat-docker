@@ -1,8 +1,11 @@
+# colcon workspace artifacts (if a source tree is mounted here)
 src/log/
 src/build/
 src/install/
 *backup
-.direnv
-result
+
+# State written back into .config by tools running inside the container
+# (bind-mounted to /root/.config)
+.config/Ultralytics/
+.config/ros.org/
 .config/nvim/
-.config/setup-development-enviornment.sh
