@@ -5,7 +5,7 @@ Docker images for the UTD RoboBoat 2026 competition cycle. Two images live here:
 | Service / image | What it is | Needs an NVIDIA GPU? |
 |---|---|---|
 | `development` (`Docker/Dockerfile`) | ROS 2 Humble dev environment with the `galaxsea` and `ROS-TCP-Endpoint` sources in `/root/roboboat_ws/src`, plus `rqt`/`rviz2`. This is where you write and run code. | **No** |
-| `zed-sim` (`Docker/Dockerfile.zed`) | ZED SDK + `zed-ros2-wrapper` running against the virtual ZED camera in the Unity simulator. | **Yes** |
+| `zed-sim` (`Docker/Dockerfile.zed`) | ZED SDK + `zed-ros2-wrapper` running against the virtual ZED 2i camera in the Unity simulator. | **Yes** |
 
 > [!IMPORTANT]
 > **The `zed-sim` image requires an NVIDIA GPU** (plus the NVIDIA driver and the
@@ -177,7 +177,7 @@ docker compose build zed-sim         # ~15 min, NVIDIA GPU machines only
 > host. It will not start on a machine without them (`docker compose up zed-sim` fails with an
 > `nvidia` runtime error). A ZED-SDK-free workaround for GPU-less laptops is in progress.
 
-The Unity simulator (`crane_sim`) carries a virtual ZED 2 that streams into the real ZED SDK in
+The Unity simulator (`crane_sim`) carries a virtual ZED 2i that streams into the real ZED SDK in
 *simulation mode*. The `zed-sim` service runs `zed-ros2-wrapper` against that stream, so the usual
 `/zed/zed_node/...` topics (rectified images, SDK stereo depth, point cloud, IMU) appear exactly as
 on the boat. It is a separate image (`Docker/Dockerfile.zed`, ZED SDK 5.4.1 + wrapper v5.4.1 on

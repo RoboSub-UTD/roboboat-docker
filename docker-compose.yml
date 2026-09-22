@@ -49,7 +49,7 @@ services:
     stdin_open: False
     command: ros2 doctor
 
-  # ZED ROS 2 wrapper in ZED SDK *simulation mode*, fed by the virtual ZED 2 in the Unity
+  # ZED ROS 2 wrapper in ZED SDK *simulation mode*, fed by the virtual ZED 2i in the Unity
   # simulator (crane_sim, ZedSimCamera on Blastoise). Separate image (Docker/Dockerfile.zed):
   # the development image is left untouched. Host networking is required: the stream is RTP/UDP
   # from Unity on the host to 127.0.0.1:30000.
@@ -83,7 +83,7 @@ services:
     # Automatically opens the zed camera 
     command: >
       ros2 launch zed_wrapper zed_camera.launch.py
-      camera_model:=zed2 camera_name:=zed
+      camera_model:=zed2i camera_name:=zed
       sim_mode:=true sim_address:=127.0.0.1 sim_port:=30000
       use_sim_time:=true
       ros_params_override_path:=/root/zed_sim_override.yaml

@@ -48,7 +48,7 @@ ARG GALAXSEA_REPO="RoboSub-UTD/galaxsea"
 ARG ROS_TCP_ENDPOINT_REPO="Unity-Technologies/ROS-TCP-Endpoint"
 ARG ROS_TCP_ENDPOINT_BRANCH="main-ros2"
 RUN cd ${BOAT_WS}/src && \
-  git clone --depth 1 https://github.com/${GALAXSEA_REPO}.git && \
+  git clone https://github.com/${GALAXSEA_REPO}.git && \
   git clone --depth 1 --branch ${ROS_TCP_ENDPOINT_BRANCH} https://github.com/${ROS_TCP_ENDPOINT_REPO}.git
 
 # Add ROS2-Specific configurations to `.bashrc`
