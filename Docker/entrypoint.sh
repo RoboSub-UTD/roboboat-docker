@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-BOAT_WS=/root/roboboat_ws
+BOAT_WS="${BOAT_WS:-/root/galaxsea_ws}"
 
 source /opt/ros/humble/setup.bash
 if [ -f "${BOAT_WS}/install/setup.bash" ] 

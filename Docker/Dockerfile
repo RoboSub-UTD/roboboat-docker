@@ -2,10 +2,10 @@ ARG ROS_DISTRO="humble"
 
 ARG USER="root"
 ARG HOME="/${USER}"
-ARG BOAT_WS="${HOME}/roboboat_ws"
+ARG BOAT_WS="${HOME}/galaxsea_ws"
 
 ARG PKGS_BASE="git wget curl jq gnupg"
-ARG PKGS_DEV="software-properties-common apt-utils python3-minimal python-is-python3 python3-pip python3-vcstool python3-colcon-common-extensions net-tools iputils-ping ros-dev-tools ros-${ROS_DISTRO}-velodyne ros-${ROS_DISTRO}-rmw-cyclonedds-cpp ros-${ROS_DISTRO}-point-cloud-transport ros-${ROS_DISTRO}-robot-localization libturbojpeg vim ros-${ROS_DISTRO}-vision-msgs-rviz-plugins"
+ARG PKGS_DEV="software-properties-common apt-utils python3-minimal python-is-python3 python3-pip python3-vcstool python3-colcon-common-extensions net-tools iputils-ping ros-dev-tools ros-${ROS_DISTRO}-velodyne ros-${ROS_DISTRO}-rmw-cyclonedds-cpp ros-${ROS_DISTRO}-point-cloud-transport ros-${ROS_DISTRO}-robot-localization libturbojpeg vim ros-${ROS_DISTRO}-vision-msgs-rviz-plugins ros-${ROS_DISTRO}-slam-toolbox"
 # GUI tooling (rqt_graph & co., rviz2). Explicit: nothing else in the image depends on them.
 ARG PKGS_GUI="ros-${ROS_DISTRO}-rqt-common-plugins ros-${ROS_DISTRO}-rqt-tf-tree ros-${ROS_DISTRO}-rviz2"
 
@@ -30,7 +30,6 @@ ARG HOME="/${USER}"
 ENV USER=${USER}
 ENV HOME=${HOME}
 ENV BOAT_WS=${BOAT_WS}
-RUN mkdir -p ${BOAT_WS}/src
 
 ## .bashrc
 COPY .config/.bashrc ${HOME}/.bashrc
@@ -43,13 +42,10 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
 # Set the RMW implementation to CycloneDDS
 ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
-# Workspace sources
-ARG GALAXSEA_REPO="RoboSub-UTD/galaxsea"
-ARG ROS_TCP_ENDPOINT_REPO="Unity-Technologies/ROS-TCP-Endpoint"
-ARG ROS_TCP_ENDPOINT_BRANCH="main-ros2"
-RUN cd ${BOAT_WS}/src && \
-  git clone https://github.com/${GALAXSEA_REPO}.git && \
-  git clone --depth 1 --branch ${ROS_TCP_ENDPOINT_BRANCH} https://github.com/${ROS_TCP_ENDPOINT_REPO}.git
+# Workspace: the galaxsea_ws repo is the whole colcon workspace. Its src/ holds the galaxsea
+# package plus ROS-TCP-Endpoint as a git submodule, pulled in by --recurse-submodules.
+ARG GALAXSEA_WS_REPO="RoboSub-UTD/galaxsea_ws"
+RUN git clone --recurse-submodules https://github.com/${GALAXSEA_WS_REPO}.git ${BOAT_WS}
 
 # Add ROS2-Specific configurations to `.bashrc`
 RUN /bin/bash -c "\

@@ -60,6 +60,8 @@ RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/setup.bash && \
 
 # Parameter overrides for the simulated camera (depth mode etc.)
 COPY Docker/zed/zed_sim_override.yaml /root/zed_sim_override.yaml
+# Depth sanity check for the simulated camera: `docker compose exec zed-sim python3 /root/depth_probe.py`
+COPY Docker/zed/depth_probe.py /root/depth_probe.py
 COPY Docker/zed/entrypoint.sh /root/zed_entrypoint.sh
 RUN chmod +x /root/zed_entrypoint.sh
 

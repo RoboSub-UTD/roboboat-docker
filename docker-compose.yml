@@ -73,6 +73,8 @@ services:
       - zed_ai_models:/usr/local/zed/resources
       # Live copy of the parameter overrides: edit + `docker compose restart zed-sim`, no rebuild.
       - ./Docker/zed/zed_sim_override.yaml:/root/zed_sim_override.yaml:ro
+      # Depth sanity check, runnable without a rebuild: exec python3 /root/depth_probe.py
+      - ./Docker/zed/depth_probe.py:/root/depth_probe.py:ro
     deploy:
       resources:
         reservations:
@@ -80,12 +82,16 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
-    # Automatically opens the zed camera 
+    # Automatically opens the zed camera
+    # publish_tf/publish_map_tf off: zed_camera_link's parent is the simulator's base_link and odom/map
+    # belong to the state estimator, so the wrapper only contributes its static tree below
+    # zed_camera_link (even with pos tracking on).
     command: >
       ros2 launch zed_wrapper zed_camera.launch.py
       camera_model:=zed2i camera_name:=zed
       sim_mode:=true sim_address:=127.0.0.1 sim_port:=30000
       use_sim_time:=true
+      publish_tf:=false publish_map_tf:=false
       ros_params_override_path:=/root/zed_sim_override.yaml
 
 volumes:

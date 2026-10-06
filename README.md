@@ -4,7 +4,7 @@ Docker images for the UTD RoboBoat 2026 competition cycle. Two images live here:
 
 | Service / image | What it is | Needs an NVIDIA GPU? |
 |---|---|---|
-| `development` (`Docker/Dockerfile`) | ROS 2 Humble dev environment with the `galaxsea` and `ROS-TCP-Endpoint` sources in `/root/roboboat_ws/src`, plus `rqt`/`rviz2`. This is where you write and run code. | **No** |
+| `development` (`Docker/Dockerfile`) | ROS 2 Humble dev environment with the [`galaxsea_ws`](https://github.com/RoboSub-UTD/galaxsea_ws) workspace (`galaxsea` + `ROS-TCP-Endpoint`) in `/root/galaxsea_ws`, plus `rqt`/`rviz2`. This is where you write and run code. | **No** |
 | `zed-sim` (`Docker/Dockerfile.zed`) | ZED SDK + `zed-ros2-wrapper` running against the virtual ZED 2i camera in the Unity simulator. | **Yes** |
 
 > [!IMPORTANT]
@@ -131,7 +131,7 @@ docker exec -it roboboat-docker-development-1 /bin/bash
 You'll land in the workspace with ROS 2 already sourced:
 
 ```
-root@hostname:~/roboboat_ws#
+root@hostname:~/galaxsea_ws#
 ```
 
 Repeat in as many terminals as you need; `exit` closes just that shell and leaves the container
@@ -142,16 +142,17 @@ The container is also a good target for VS Code's *Dev Containers: Attach to Run
 
 ### The workspace
 
-`/root/roboboat_ws/src` in the image holds a fresh clone of:
+`/root/galaxsea_ws` in the image is a fresh clone (with submodules) of
+<https://github.com/RoboSub-UTD/galaxsea_ws> (`main`). That repo is the whole workspace; its `src/` holds:
 
-- `galaxsea` — <https://github.com/RoboSub-UTD/galaxsea> (`main`)
-- `ROS-TCP-Endpoint` — <https://github.com/Unity-Technologies/ROS-TCP-Endpoint> (`main-ros2`),
-  the ROS side of the Unity ↔ ROS bridge
+- `galaxsea`: our boat code
+- `ROS-TCP-Endpoint`: git submodule of <https://github.com/Unity-Technologies/ROS-TCP-Endpoint>
+  (`main-ros2`), the ROS side of the Unity ↔ ROS bridge
 
 The image ships the sources only; build them once inside the container:
 
 ```bash
-cd /root/roboboat_ws
+cd /root/galaxsea_ws
 rosdep update && rosdep install --from-paths src --ignore-src -r -y
 colcon build --symlink-install
 source install/setup.bash            # new shells pick this up automatically
@@ -188,6 +189,18 @@ docker compose build zed-sim          # once (~15 min, downloads the stereolabs/
 # start Unity, press Play (console: "ZED streamer ready ... port 30000"), then:
 docker compose up zed-sim
 ```
+
+To check the depth is metric, tick **Log ground truth depth** on `ZedSimCamera` in Unity and read the
+same pixels back from the SDK:
+
+```bash
+docker compose exec zed-sim python3 /root/depth_probe.py
+```
+
+It prints the calibration the SDK is using (HD720: fx 529.8, principal point 640/360, no distortion,
+120 mm baseline) and the depth at five pixels. Those should match Unity's logged ground-truth Z to a
+few centimetres; a constant ratio between them means the simulator's stereo rig and the SDK's
+calibration disagree. The script is bind-mounted, so editing it needs no rebuild.
 
 ## Troubleshooting
 
