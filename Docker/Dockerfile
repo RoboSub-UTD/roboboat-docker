@@ -5,7 +5,7 @@ ARG HOME="/${USER}"
 ARG BOAT_WS="${HOME}/galaxsea_ws"
 
 ARG PKGS_BASE="git wget curl jq gnupg"
-ARG PKGS_DEV="software-properties-common apt-utils python3-minimal python-is-python3 python3-pip python3-vcstool python3-colcon-common-extensions net-tools iputils-ping ros-dev-tools ros-${ROS_DISTRO}-velodyne ros-${ROS_DISTRO}-rmw-cyclonedds-cpp ros-${ROS_DISTRO}-point-cloud-transport ros-${ROS_DISTRO}-robot-localization libturbojpeg vim ros-${ROS_DISTRO}-vision-msgs-rviz-plugins ros-${ROS_DISTRO}-slam-toolbox"
+ARG PKGS_DEV="software-properties-common apt-utils python3-minimal python-is-python3 python3-pip python3-vcstool python3-colcon-common-extensions net-tools iputils-ping ros-dev-tools ros-${ROS_DISTRO}-velodyne ros-${ROS_DISTRO}-rmw-cyclonedds-cpp ros-${ROS_DISTRO}-point-cloud-transport ros-${ROS_DISTRO}-robot-localization libturbojpeg vim ros-${ROS_DISTRO}-vision-msgs-rviz-plugins ros-${ROS_DISTRO}-slam-toolbox ros-${ROS_DISTRO}-nav2-bringup"
 # GUI tooling (rqt_graph & co., rviz2). Explicit: nothing else in the image depends on them.
 ARG PKGS_GUI="ros-${ROS_DISTRO}-rqt-common-plugins ros-${ROS_DISTRO}-rqt-tf-tree ros-${ROS_DISTRO}-rviz2"
 
