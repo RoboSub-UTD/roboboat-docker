@@ -37,6 +37,14 @@ COPY .config/.bash.d ${HOME}/.bash.d
 
 RUN apt-get update -y && apt-get install -y --no-install-recommends \
   ${PKGS_BASE} ${PKGS_DEV} ${PKGS_GUI} \
+  ros-${ROS_DISTRO}-tf2 ros-${ROS_DISTRO}-tf2-ros \
+  && for package in "ros-${ROS_DISTRO}-tf2" "ros-${ROS_DISTRO}-tf2-ros"; do \
+    version="$(dpkg-query -W -f='${Version}' "$package")" || exit 1; \
+    if ! dpkg --compare-versions "$version" ge 0.25.24; then \
+      printf '%s %s is below the required version 0.25.24\n' "$package" "$version" >&2; \
+      exit 1; \
+    fi; \
+  done \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Set the RMW implementation to CycloneDDS
